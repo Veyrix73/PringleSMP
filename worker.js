@@ -14,41 +14,60 @@ export default {
       return new Response("Method Not Allowed", { status: 405, headers: cors });
     }
 
-    /*
-      We use the MCSH public IP directly because the earlier
-      mcsrvstat hostname lookup for pringlesmp.mcsh.io failed.
-      Change this later if MCSH gives the server a new Java IP/port.
-    */
-    const upstream =
-      "https://api.mcsrvstat.us/3/57.128.140.147:25565";
+    const sources = [
+      "https://api.mcstatus.io/v2/status/java/pringlesmp.mcsh.io?timeout=4",
+      "https://api.mcsrvstat.us/3/pringlesmp.mcsh.io"
+    ];
 
-    try {
-      const response = await fetch(upstream, {
-        headers: {
-          "User-Agent": "PringleSMP-Cloud-Status/1.0"
-        }
-      });
+    for (const url of sources) {
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "User-Agent": "PringleSMP-Cloud-Status/2.0",
+            "Accept": "application/json"
+          }
+        });
 
-      const body = await response.text();
+        if (!response.ok) continue;
 
-      return new Response(body, {
-        status: response.status,
-        headers: {
-          ...cors,
-          "Content-Type": "application/json; charset=utf-8"
-        }
-      });
-    } catch {
-      return new Response(JSON.stringify({
-        online: false,
-        error: "Cloud status request failed"
-      }), {
-        status: 502,
-        headers: {
-          ...cors,
-          "Content-Type": "application/json; charset=utf-8"
-        }
-      });
+        const data = await response.json();
+        const players = data.players || {};
+
+        return new Response(JSON.stringify({
+          online: data.online === true,
+          players: {
+            online: Number(players.online || 0),
+            max: Number(players.max || 0)
+          },
+          host: data.host || data.hostname || "pringlesmp.mcsh.io",
+          port: data.port || 25565,
+          version: data.version?.name || data.version || null,
+          motd: data.motd?.clean || data.motd?.html || null,
+          source: url.includes("mcstatus.io") ? "mcstatus.io" : "mcsrvstat.us",
+          checkedAt: Date.now()
+        }), {
+          status: 200,
+          headers: {
+            ...cors,
+            "Content-Type": "application/json; charset=utf-8"
+          }
+        });
+      } catch {
+        // Try the next status provider.
+      }
     }
+
+    return new Response(JSON.stringify({
+      online: false,
+      players: { online: 0, max: 0 },
+      error: "Both status providers failed",
+      checkedAt: Date.now()
+    }), {
+      status: 502,
+      headers: {
+        ...cors,
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    });
   }
 };
