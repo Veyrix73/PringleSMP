@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PringleSMP — Live Status</title>
+<style>
+:root{--gold:#ffd21a;--bg:#070707;--panel:#111;--text:#f5f5f5;--muted:#929292;--green:#49e47b;--red:#ff6262}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,rgba(255,210,26,.12),transparent 35%),var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;display:grid;place-items:center;padding:24px}
+.card{width:min(720px,100%);background:rgba(17,17,17,.94);border:1px solid rgba(255,210,26,.16);border-radius:22px;padding:30px;box-shadow:0 25px 80px rgba(0,0,0,.45)}
+.logo{width:52px;height:52px;border-radius:15px;background:linear-gradient(145deg,#fff08b,var(--gold));color:#111;display:grid;place-items:center;font-size:25px;font-weight:1000;box-shadow:0 12px 35px rgba(255,210,26,.18)}
+.top{display:flex;align-items:center;gap:14px}.brand{font-size:23px;font-weight:950}.sub{font-size:12px;color:#777;margin-top:2px}
+h1{font-size:clamp(42px,9vw,78px);line-height:.9;letter-spacing:-4px;margin:38px 0 14px}h1 span{color:var(--gold)}
+p{color:var(--muted);line-height:1.65}.status{display:inline-flex;align-items:center;gap:9px;padding:8px 11px;border-radius:999px;background:#171717;border:1px solid #242424;font-size:12px;font-weight:900}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(73,228,123,.7)}.dot.off{background:var(--red);box-shadow:0 0 12px rgba(255,98,98,.55)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:25px}.stat{background:#0c0c0c;border:1px solid #222;border-radius:14px;padding:16px}.stat b{display:block;color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.stat strong{font-size:17px}
+.ip{margin-top:14px;background:#0c0c0c;border:1px solid #222;border-radius:14px;padding:15px;font-family:Consolas,monospace}.small{font-size:11px;color:#666;margin-top:18px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}h1{letter-spacing:-2px}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="top"><div class="logo">P</div><div><div class="brand">PringleSMP</div><div class="sub">Official Minecraft Server</div></div></div>
+  <div style="margin-top:28px" class="status"><span id="dot" class="dot"></span><span id="status">Checking cloud status…</span></div>
+  <h1>PRINGLE<span>SMP</span></h1>
+  <p>Live server information. Nothing needs to run on your computer — the status request is handled by a cloud Worker.</p>
+  <div class="grid">
+    <div class="stat"><b>Players</b><strong id="players">—</strong></div>
+    <div class="stat"><b>Server</b><strong id="server">—</strong></div>
+    <div class="stat"><b>Updated</b><strong id="updated">—</strong></div>
+  </div>
+  <div class="ip">pringlesmp.mcsh.io</div>
+  <div class="small">Cloud status refresh: every 30 seconds while this page is open.</div>
+</main>
+
+<script>
+/*
+  IMPORTANT:
+  After deploying the Worker, replace the URL below.
+  Example:
+  https://pringlesmp-status.yourname.workers.dev
+*/
+const CLOUD_STATUS_URL = "PASTE_WORKER_URL_HERE";
+
+const $ = id => document.getElementById(id);
+
+async function loadStatus(){
+  if(CLOUD_STATUS_URL.includes("PASTE_WORKER_URL_HERE")){
+    $("status").textContent = "Worker URL not added yet";
+    $("dot").classList.add("off");
+    return;
+  }
+
+  try{
+    const res = await fetch(CLOUD_STATUS_URL,{cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+
+    const data = await res.json();
+    const online = data.online === true;
+    const count = Number(data.players?.online ?? 0);
+    const max = data.players?.max ?? "—";
+
+    $("status").textContent = online ? "Server online" : "Server offline";
+    $("dot").classList.toggle("off",!online);
+    $("players").textContent = online ? count + "/" + max : "0";
+    $("server").textContent = online ? "ONLINE" : "OFFLINE";
+    $("updated").textContent = new Date().toLocaleTimeString([],{
+      hour:"2-digit",minute:"2-digit",second:"2-digit"
+    });
+  }catch(e){
+    console.error(e);
+    $("status").textContent = "Cloud status unavailable";
+    $("dot").classList.add("off");
+    $("server").textContent = "ERROR";
+    $("updated").textContent = new Date().toLocaleTimeString([],{
+      hour:"2-digit",minute:"2-digit",second:"2-digit"
+    });
+  }
+}
+
+loadStatus();
+setInterval(loadStatus,30000);
+</script>
+</body>
+</html>
