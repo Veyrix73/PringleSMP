@@ -1,85 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PringleSMP — Live Status</title>
-<style>
-:root{--gold:#ffd21a;--bg:#070707;--panel:#111;--text:#f5f5f5;--muted:#929292;--green:#49e47b;--red:#ff6262}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,rgba(255,210,26,.12),transparent 35%),var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;display:grid;place-items:center;padding:24px}
-.card{width:min(720px,100%);background:rgba(17,17,17,.94);border:1px solid rgba(255,210,26,.16);border-radius:22px;padding:30px;box-shadow:0 25px 80px rgba(0,0,0,.45)}
-.logo{width:52px;height:52px;border-radius:15px;background:linear-gradient(145deg,#fff08b,var(--gold));color:#111;display:grid;place-items:center;font-size:25px;font-weight:1000;box-shadow:0 12px 35px rgba(255,210,26,.18)}
-.top{display:flex;align-items:center;gap:14px}.brand{font-size:23px;font-weight:950}.sub{font-size:12px;color:#777;margin-top:2px}
-h1{font-size:clamp(42px,9vw,78px);line-height:.9;letter-spacing:-4px;margin:38px 0 14px}h1 span{color:var(--gold)}
-p{color:var(--muted);line-height:1.65}.status{display:inline-flex;align-items:center;gap:9px;padding:8px 11px;border-radius:999px;background:#171717;border:1px solid #242424;font-size:12px;font-weight:900}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(73,228,123,.7)}.dot.off{background:var(--red);box-shadow:0 0 12px rgba(255,98,98,.55)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:25px}.stat{background:#0c0c0c;border:1px solid #222;border-radius:14px;padding:16px}.stat b{display:block;color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.stat strong{font-size:17px}
-.ip{margin-top:14px;background:#0c0c0c;border:1px solid #222;border-radius:14px;padding:15px;font-family:Consolas,monospace}.small{font-size:11px;color:#666;margin-top:18px}
-@media(max-width:600px){.grid{grid-template-columns:1fr}h1{letter-spacing:-2px}}
-</style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PringleSMP • Minecraft Survival</title><meta name="description" content="PringleSMP — Minecraft survival, community, updates and live server status.">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="card">
-  <div class="top"><div class="logo">P</div><div><div class="brand">PringleSMP</div><div class="sub">Official Minecraft Server</div></div></div>
-  <div style="margin-top:28px" class="status"><span id="dot" class="dot"></span><span id="status">Checking cloud status…</span></div>
-  <h1>PRINGLE<span>SMP</span></h1>
-  <p>Live server information. Nothing needs to run on your computer — the status request is handled by a cloud Worker.</p>
-  <div class="grid">
-    <div class="stat"><b>Players</b><strong id="players">—</strong></div>
-    <div class="stat"><b>Server</b><strong id="server">—</strong></div>
-    <div class="stat"><b>Updated</b><strong id="updated">—</strong></div>
-  </div>
-  <div class="ip">pringlesmp.mcsh.io</div>
-  <div class="small">Cloud status refresh: every 30 seconds while this page is open.</div>
-</main>
-
-<script>
-/*
-  IMPORTANT:
-  After deploying the Worker, replace the URL below.
-  Example:
-  https://pringlesmp-status.yourname.workers.dev
-*/
-const CLOUD_STATUS_URL = "https://pringlesmp-status.davis-zalais.workers.dev";
-
-const $ = id => document.getElementById(id);
-
-async function loadStatus(){
-  if(CLOUD_STATUS_URL.includes("PASTE_WORKER_URL_HERE")){
-    $("status").textContent = "Worker URL not added yet";
-    $("dot").classList.add("off");
-    return;
-  }
-
-  try{
-    const res = await fetch(CLOUD_STATUS_URL,{cache:"no-store"});
-    if(!res.ok) throw new Error("HTTP "+res.status);
-
-    const data = await res.json();
-    const online = data.online === true;
-    const count = Number(data.players?.online ?? 0);
-    const max = data.players?.max ?? "—";
-
-    $("status").textContent = online ? "Server online" : "Server offline";
-    $("dot").classList.toggle("off",!online);
-    $("players").textContent = online ? count + "/" + max : "0";
-    $("server").textContent = online ? "ONLINE" : "OFFLINE";
-    $("updated").textContent = new Date().toLocaleTimeString([],{
-      hour:"2-digit",minute:"2-digit",second:"2-digit"
-    });
-  }catch(e){
-    console.error(e);
-    $("status").textContent = "Cloud status unavailable";
-    $("dot").classList.add("off");
-    $("server").textContent = "ERROR";
-    $("updated").textContent = new Date().toLocaleTimeString([],{
-      hour:"2-digit",minute:"2-digit",second:"2-digit"
-    });
-  }
-}
-
-loadStatus();
-setInterval(loadStatus,30000);
-</script>
-</body>
-</html>
+<header class="nav"><a class="brand" href="index.html"><span class="logo">P</span><span>PRINGLE<span>SMP</span></span></a>
+<nav><a class="active" href="index.html">Home</a><a href="status.html">Status</a><a href="rules.html">Rules</a><a href="guide.html">Guide</a><a href="staff.html">Team</a><a href="changelog.html">Updates</a></nav>
+<a class="navbtn" href="https://discord.gg/5BSSkFeNfR" target="_blank">Discord ↗</a></header>
+<main>
+<section class="hero"><div class="hero-copy"><div class="eyebrow">✦ PRINGLE SMP • SURVIVAL</div><h1>Your next <span>Minecraft</span> adventure starts here.</h1><p>A community survival server with a living world, events, trading, teams and plenty of room to build something ridiculous.</p><div class="actions"><a class="btn primary" href="guide.html">How to join →</a><a class="btn" href="status.html">Live status</a></div></div>
+<div class="hero-card"><div class="mini-label">SERVER STATUS</div><div class="statusline"><span id="dot" class="dot"></span><strong id="state">Checking...</strong></div><div class="bigplayers" id="players">—</div><div class="muted">players online</div><div class="serverip" onclick="copyIP()">pringlesmp.mcsh.io <span id="copy">COPY</span></div></div></section>
+<section class="grid three"><article class="card"><div class="icon">⚡</div><h3>Live server</h3><p>See the current server state and player count without launching Minecraft.</p><a href="status.html">Open status →</a></article><article class="card"><div class="icon">🌍</div><h3>Build your world</h3><p>Set up a base, explore, trade and make your mark on the PringleSMP world.</p><a href="guide.html">Read the guide →</a></article><article class="card"><div class="icon">🛡️</div><h3>Play fair</h3><p>Know the server rules before you jump in and keep the community fun.</p><a href="rules.html">View rules →</a></article></section>
+<section class="split"><div><div class="eyebrow">WHAT'S HERE</div><h2>More than a status page.</h2><p class="lead">This site is the PringleSMP hub: server status, joining instructions, rules, team information and update history in one place.</p></div><div class="feature-list"><div><b>01</b><span><strong>Live status</strong><small>Cloud-powered server checking.</small></span></div><div><b>02</b><span><strong>Quick join</strong><small>Copy the IP in one click.</small></span></div><div><b>03</b><span><strong>Updates</strong><small>Keep up with server changes.</small></span></div></div></section>
+<section class="cta"><div><div class="eyebrow">READY?</div><h2>See you in-game.</h2><p>Grab the IP, join the community and start building.</p></div><a class="btn primary" href="guide.html">Join PringleSMP →</a></section>
+</main><footer><span>© 2026 PringleSMP</span><span>Made for the community • <a href="status.html">Status</a></span></footer>
+<script src="app.js"></script></body></html>
